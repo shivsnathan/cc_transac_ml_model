@@ -47,9 +47,17 @@ df['category'] = df['category'].cat.codes
 categorical_cols = ['merchant', 'gender', 'job']
 df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
 
+# Convert all boolean columns to int (0/1)
+for col in df.select_dtypes(include='bool').columns:
+    df[col] = df[col].astype(int)
+
+df.to_csv('processed_transactions.csv', index=False)
+
 # Split features/target
 X = df.drop('category', axis=1)
 y = df['category']
+
+y = df['category'].astype(int)
 
 # Train-test split (stratified)
 X_train, X_test, y_train, y_test = train_test_split(
@@ -59,6 +67,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Apply SMOTE
 sm = SMOTE(random_state=42)
 X_train_res, y_train_res = sm.fit_resample(X_train, y_train)
+
+y_train_res = y_train_res.astype(int)
 
 # Train model
 model = RandomForestClassifier(n_estimators=100, max_depth=12, class_weight='balanced', random_state=42, n_jobs=-1)
